@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, caelestia-shell, ... }:
+{ config, pkgs, caelestia-shell, zen-browser,  ... }:
 
 {
   nixpkgs.config.allowUnfree = true; #allow unfree (proprietary) packages
@@ -16,13 +16,11 @@
   };
 
 
-#  nixpkgs.overlays = [
-#    (final: prev: {
-#      openldap = prev.openldap.overrideAttrs (_: {
-#        doCheck = false;
-#      });
-#    })
-#  ]; #remove this after openldap starts working on unstable
+ nixpkgs.config.packageOverrides = pkgs: {
+   openldap = pkgs.openldap.overrideAttrs (old: {
+    doCheck = false;
+   });
+ }; #remove this after openldap starts working on unstable
 
   boot.kernel.sysctl."kernel.unprivileged_userns_clone" = 1;
   
@@ -47,16 +45,24 @@
 
   services.cpupower-gui.enable = true; #enable cpupower-gui
 
+#  home-manager = {
+#      useGlobalPkgs = true;
+#      useUserPackages = true;
+#      extraSpecialArgs = { inherit caelestia-shell zen-browser; }; # This passes your flakes to home.nix
+#      users.gleb = import ./home.nix; # Use the relative path
+#    };
+
 # Things above were added by me
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       #<home-manager/nixos>
     ];
-	
+
+
   # Bootloader.
   boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/sdb";
+  boot.loader.grub.device = "/dev/sda";
   boot.loader.grub.useOSProber = true;
 
   # Use latest kernel.
@@ -156,7 +162,7 @@
     micro
     fish
     alacritty
-	caelestia-shell.packages.x86_64-linux.default
+	#caelestia-shell.packages.x86_64-linux.default
     kitty
     git
     curl
@@ -171,13 +177,16 @@
 	cpupower-gui
 	protonup-qt
 	wine
-	#lutris
+	lutris
 	winetricks
 	gamescope
 	#wineWowPackages.stable
 	mediawriter
 	gnome-boxes
 	#pkgs.cachix
+	brave
+	zen-browser.packages.x86_64-linux.default
+	mangohud
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
